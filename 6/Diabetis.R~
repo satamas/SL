@@ -1,0 +1,20 @@
+library("e1071")
+library("lattice")
+data.diabetis <- read.table("data/Diabetis.txt", header=TRUE)
+
+print("============LINEAR=============")
+tn.svm.linear <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "linear", cost = 2^(-5:15))
+tn.svm.linear
+table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.linear$best.model))
+
+print("============POLYNOMIAL=============")
+tn.svm.polynomial <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "polynomial", cost = 2^(-5:15))
+tn.svm.polynomial
+table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.polynomial$best.model))
+
+print("============RADIAL=============")
+tn.svm.radial <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "radial", cost = 2^(-5:15))
+tn.svm.radial
+table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.radial$best.model))
+
+

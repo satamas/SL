@@ -1,0 +1,10 @@
+library(knitr)
+library(lattice)
+library(MASS)
+library(e1071)
+library(corrplot)
+library(latticeExtra)
+
+data.concrete <- read.csv("data/Concrete_Data.csv", comment.char = "#")
+names(my.data)
+summary(my.data)
