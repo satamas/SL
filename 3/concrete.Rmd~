@@ -1,1 +1,0 @@
-data.concrete <- read.csv("data/Concrete_Data.csv", comment.char = '#')
