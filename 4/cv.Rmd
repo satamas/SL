@@ -1,0 +1,62 @@
+---
+title: "glaucomaMVF.R"
+author: "Атамась Семён"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 15
+    fig_width: 15
+    highlight: tango
+    self_contained: no
+    theme: spacelab
+---
+
+```{r}
+library("knitr")
+library("e1071")
+library("lattice")
+```
+Функция для генерации данных.
+```{r}
+my.datagen <- function(sample.size, predictors.size) {
+  data <- data.frame(replicate(predictors.size, runif(sample.size)))
+  data$Y <- runif(sample.size)
+  data
+}
+```
+Функция для геерации модели.
+```{r}
+my.fn.gen.formula <- function(data) {
+  corrs <- sort(sapply(names(data)[-length(data)], function(x) abs(cor(data$Y, data[[x]]))), decreasing=TRUE)
+  predictors <- names(corrs)[1:20]
+  as.formula(paste("Y ~ ", paste(predictors, collapse="+")))
+}
+```
+Попытаемся обучиться и валидировать на одних и тех же данных
+```{r}
+my.data <- my.fn.gen.data(50, 1000)
+my.model.formula <- my.fn.gen.formula(my.data)
+my.model <- lm(my.model.formula, data=my.data)
+summary(my.model)
+tune(lm, my.model.formula, data=my.data)
+```
+Получили достаточно маленькую ошибку, как и ожидалось.
+
+Разделим на тренировочную и тестовую выборки.
+```{r}
+my.data2 <- my.fn.gen.data(100, 1000)
+my.data2.train <- my.data2[1:50,]
+my.data2.test  <- my.data2[-(1:50),]
+my.model2.formula <- my.fn.gen.formula(my.data2.train)
+my.model2 <- lm(my.model2.formula, data=my.data2.train)
+summary(my.model2)
+tune(lm, my.model2.formula, data=my.data2.test)
+```
+Получили ошибку намного больше.
+Проделаем нормальную кросс-валидацию
+```{r}
+tune(function(formula, data, subset, ...) {
+  data <- data[subset,]
+  lm(my.fn.gen.formula(data), data=data)
+}, my.model.formula, data=my.data)
+```
