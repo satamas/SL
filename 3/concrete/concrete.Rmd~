@@ -1,0 +1,88 @@
+---
+title: "glaucomaMVF.R"
+author: "Атамась Семён"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 15
+    fig_width: 15
+    highlight: tango
+    self_contained: no
+    theme: spacelab
+---
+
+```{r}
+library("knitr")
+library("e1071")
+library("lattice")
+library("corrplot")
+library(stats)
+library(MASS)
+data.concrete <- read.csv("../data/Concrete_Data.csv", comment.char = "#")
+check<- function(l){ 
+  print(tune(lm, as.formula(l), data = data.concrete, tunecontrol = tune.control(sampling = "fix",fix = 2/3)))
+}
+model<- function(f){ 
+  new_model = lm(as.formula(f),data.concrete)
+  return (new_model)
+}
+```
+
+
+Посмотрим на общую информацию и стандартные картиночки.
+```{r}
+summary(data.concrete)
+splom(~data.concrete, data.concrete,upper.panel=function(x, y, ...) { panel.xyplot(x, y, ...); panel.loess(x, y, ..., col='red') },lower.panel=function(x, y, ...) { },
+pscale=0, varname.cex=0.7, par.settings=simpleTheme(pch=13, cex=0.1))
+corrplot.mixed(cor(data.concrete), tl.cex=0.5)
+```
+
+Видна линейная зависимость от цемента, отсутствие зависимости от FlyAsh.
+Видно что Water и FineAggregate/Superplasticizer коррелируют.
+Скорее всего стоит факторизовать Age и Water.
+
+строим базовую модель
+```{r}
+model1 <- model(ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag+FlyAsh + Water + Superplasticizer + CoarseAggregate + FineAggregate + Age)
+summary(model1)
+check(model1)
+```
+
+Ошибка достаточно велика, исключим CoarseAggregate, логарифмируем age  и water, т.к. они дискретены.
+
+```{r}
+model2 <- model(ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag+FlyAsh + log(Water) + Superplasticizer+ FineAggregate + log(Age))
+summary(model2)
+check(model2)
+```
+Стало лучше. Для того чтобы определить факторы рассмотрим подробнее Age и Water.
+
+```{r}
+
+scatter.smooth(data.concrete$Age, data.concrete$ConcreteCompressiveStrength)
+data.concrete$ageFactor<-data.concrete$Age<90
+scatter.smooth(data.concrete$Water, data.concrete$ConcreteCompressiveStrength)
+data.concrete$waterFactor<-data.concrete$Water<190
+```
+
+строим модель
+
+```{r}
+model3 <- model(ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag+FlyAsh + waterFactor:log(Water) + Superplasticizer+ FineAggregate + ageFactor:log(Age))
+summary(model3)
+check(model3)
+```
+
+проверим последние две модели 
+
+
+```{r}
+model2.aic<-stepAIC(model2)
+summary(model2.aic)
+check(model2.aic)
+
+model3.aic<-stepAIC(model3)
+summary(model3.aic)
+check(model3.aic)
+```
+
