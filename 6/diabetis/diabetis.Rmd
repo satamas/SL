@@ -20,7 +20,7 @@ data.diabetis <- read.table("../data/Diabetis.txt", header=TRUE)
 
 ===========================================LINEAR=============================================
 ```{r}
-tn.svm.linear <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "linear", cost = 2^(-10:10))
+tn.svm.linear <- tune(svm, diabetes ~ ., data = data.diabetis, ranges = list(cost = 2^(-10:10)), type = "C-classification", kernel = "linear", class.weights = c(neg = 0.33, pos = 0.67))
 tn.svm.linear
 table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.linear$best.model))
 xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, "cost"]), type="b")
@@ -28,7 +28,7 @@ xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, 
 
 ===========================================POLYNOMIAL==========================================
 ```{r}
-tn.svm.polynomial <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "polynomial", cost = 2^(-10:10), degree= (1:5))
+tn.svm.polynomial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list(cost = 2^(-10:10), degree= (1:5)), type = "C-classification", kernel = "polynomial", class.weights = c(neg = 0.33, pos = 0.67))
 tn.svm.polynomial
 table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.polynomial$best.model))
 xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$performances[, "cost"]), groups = tn.svm.polynomial$performances[, "degree"] , type="b", auto.key=list(title="degree", corner=c(0.95,1), lines=TRUE))
@@ -36,7 +36,7 @@ xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$perform
 
 ============================================RADIAL==============================================
 ```{r}
-tn.svm.radial <- tune.svm(diabetes ~ ., data = data.diabetis, type = "C-classification", kernel = "radial", cost = 2^(-5:15), gamma = (10^(-5:1))/ncol(data.diabetis))
+tn.svm.radial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list( cost = 2^(-5:15), gamma = (10^(-5:1))/ncol(data.diabetis)), type = "C-classification", kernel = "radial", class.weights = c(neg = 0.33, pos = 0.67))
 tn.svm.radial
 table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.radial$best.model))
 xyplot(tn.svm.radial$performances[, "error"] ~ log(tn.svm.radial$performances[, "cost"]), groups = tn.svm.radial$performances[, "gamma"] , type="b", auto.key=list(title="gamma", corner=c(0.95,1), lines=TRUE))
