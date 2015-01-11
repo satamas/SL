@@ -1,0 +1,90 @@
+---
+title: "seeds.R"
+author: "Атамась Семён"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 15
+    fig_width: 15
+    highlight: tango
+    self_contained: no
+    theme: spacelab
+---
+
+```{r}
+library("knitr")
+library("e1071")
+library("lattice")
+library("corrplot")
+library("MASS")
+```
+
+Готовим данные
+
+```{r}
+data.seeds <- read.table("../data/seeds_dataset.txt")
+names(data.seeds)<-c('area','perimeter','compactness','length','width','asymmetry','lengthGroove','sort')
+summary(data.seeds)
+```
+
+Строим графики
+
+```{r}
+marginal.plot(data.seeds, data=data.seeds, groups = sort)
+splom(~data.seeds, data.seeds,upper.panel=function(x, y, ...) { panel.xyplot(x, y, ...); panel.loess(x, y, ..., col='red') },lower.panel=function(x, y, ...) { },
+pscale=0, varname.cex=0.7, par.settings=simpleTheme(pch=13, cex=0.1))
+corrplot.mixed(cor(data.seeds), tl.cex=0.5)
+```
+
+Делим выборку
+
+```{r}
+data.seeds$sort <- as.factor(data.seeds$sort)
+idx_ <- sample(nrow(data.seeds), size = nrow(data.seeds) * 0.6)
+data.seeds.train <- data.seeds[idx_,]
+data.seeds.test <- data.seeds[-idx_,]
+```
+
+строим модели
+```{r}
+lda(sort ~ ., data = data.seeds)
+tune(lda, sort ~ ., data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...)$class)
+```
+
+В описании данных сказано, что компактность вычисляется из других измерений, так что уберём её. Так же уберём ассиметрию, т.к. сорта по ней смешанны
+
+```{r}
+data.seeds.formula <- sort ~ area+perimeter+length+width+lengthGroove
+lda(data.seeds.formula, data = data.seeds)
+tune(lda, data.seeds.formula , data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...)$class)
+```
+
+Байес
+
+```{r}
+naiveBayes(data.seeds.formula, data = data.seeds)
+tune(naiveBayes, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...))
+```
+плохо
+
+Мультиномиальная регрессия
+
+```{r}
+multinom(data.seeds.formula, data = data.seeds, trace=FALSE)
+tune(multinom, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...), maxit = 2000, trace=FALSE)
+```
+лучше.
+
+Используем aic для отбора признаков и прогоним ещё раз все модели
+
+```{r}
+method.trained<-multinom(data.seeds.formula, data = data.seeds.train, maxit = 2000, trace=FALSE)
+data.seeds.formula<-as.formula(stepAIC(method.trained))
+lda(data.seeds.formula , data = data.seeds)
+tune(lda, data.seeds.formula , data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...)$class)
+naiveBayes(data.seeds.formula, data = data.seeds)
+tune(naiveBayes, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...))
+multinom(data.seeds.formula, data = data.seeds, trace=FALSE)
+tune(multinom, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),predict.func =  function(...) predict(...), trace=FALSE)
+```
+Стало лучше, но байес всё так же плох.
