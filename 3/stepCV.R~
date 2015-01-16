@@ -204,7 +204,3 @@ stepCV <- function (object, scope, scale = 0, direction = c("both", "backward",
     step.results(models = models[seq(nm)], fit, object, usingCp)
 }
 
-l <- lm(mpg ~ ., mtcars)
-stepAIC(l, trace = TRUE)
-stepCV(l, trace = TRUE)
-

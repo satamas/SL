@@ -16,13 +16,16 @@ output:
 library("knitr")
 library("e1071")
 library("lattice")
-data.diabetis <- read.table("../data/Diabetis.txt", header=TRUE)
+data.elements <- read.csv("data/data.csv", header=TRUE)
+columns_to_drop <- c("url")
+data.elements <- data.elements[,!(names(data.elements) %in% columns_to_drop)]
+data.elements$has_content <- data.elements$has_content <- factor(data.elements$has_content)
 ```
 
 ===========================================LINEAR=============================================
 
 ```r
-tn.svm.linear <- tune(svm, diabetes ~ ., data = data.diabetis, ranges = list(cost = 2^(-10:10)), type = "C-classification", kernel = "linear", class.weights = c(neg = 0.33, pos = 0.67))
+tn.svm.linear <- tune(svm, has_content ~ ., data = data.elements, ranges = list(cost = 2^(-5:10)), type = "C-classification", kernel = "linear", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.linear
 ```
 
@@ -34,20 +37,20 @@ tn.svm.linear
 ## 
 ## - best parameters:
 ##  cost
-##     4
+##    16
 ## 
-## - best performance: 0.226859
+## - best performance: 0.03361286
 ```
 
 ```r
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.linear$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.linear$best.model))
 ```
 
 ```
 ##       predicted
-## actual neg pos
-##    neg 209  53
-##    pos  31  99
+## actual    0    1
+##      0 1798    0
+##      1   29  257
 ```
 
 ```r
@@ -59,7 +62,7 @@ xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, 
 ===========================================POLYNOMIAL==========================================
 
 ```r
-tn.svm.polynomial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list(cost = 2^(-10:10), degree= (1:5)), type = "C-classification", kernel = "polynomial", class.weights = c(neg = 0.33, pos = 0.67))
+tn.svm.polynomial <- tune(svm, has_content ~ ., data = data.elements, ranges=list(cost = 2^(0:15), degree= (1:3)), type = "C-classification", kernel = "polynomial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.polynomial
 ```
 
@@ -70,21 +73,21 @@ tn.svm.polynomial
 ## - sampling method: 10-fold cross validation 
 ## 
 ## - best parameters:
-##     cost degree
-##  0.03125      1
+##  cost degree
+##  8192      1
 ## 
-## - best performance: 0.224359
+## - best performance: 0.03647903
 ```
 
 ```r
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.polynomial$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.polynomial$best.model))
 ```
 
 ```
 ##       predicted
-## actual neg pos
-##    neg 210  52
-##    pos  38  92
+## actual    0    1
+##      0 1798    0
+##      1   31  255
 ```
 
 ```r
@@ -96,7 +99,7 @@ xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$perform
 ============================================RADIAL==============================================
 
 ```r
-tn.svm.radial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list( cost = 2^(-10:20), gamma = (10^(-5:5))/ncol(data.diabetis)), type = "C-classification", kernel = "radial", class.weights = c(neg = 0.33, pos = 0.67))
+tn.svm.radial <- tune(svm, has_content ~ ., data = data.elements, ranges=list( cost = 2^(0:15), gamma = (10^(-5:0))/ncol(data.elements)), type = "C-classification", kernel = "radial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.radial
 ```
 
@@ -107,21 +110,21 @@ tn.svm.radial
 ## - sampling method: 10-fold cross validation 
 ## 
 ## - best parameters:
-##     cost        gamma
-##  1048576 1.111111e-06
+##  cost       gamma
+##   512 0.004545455
 ## 
-## - best performance: 0.2274359
+## - best performance: 0.03119285
 ```
 
 ```r
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.radial$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.radial$best.model))
 ```
 
 ```
 ##       predicted
-## actual neg pos
-##    neg 214  48
-##    pos  35  95
+## actual    0    1
+##      0 1798    0
+##      1   30  256
 ```
 
 ```r

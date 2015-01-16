@@ -1,0 +1,51 @@
+---
+title: "seeds.R"
+author: "Атамась Семён"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 15
+    fig_width: 15
+    highlight: tango
+    self_contained: no
+    theme: spacelab
+---
+
+```{r}
+library(lattice)
+library(latticeExtra)
+library(corrplot)
+library(MASS)
+library(e1071)
+library(nnet)
+library(boot)
+library(stats)
+```
+
+
+```{r}
+data.concrete <- read.csv("../data/Concrete_Data.csv",comment.char = "#")
+data.concrete$ageFactor<-data.concrete$Age<90
+data.concrete$waterFactor<-data.concrete$Water<190
+summary(data.concrete)
+fit <- lm(formula = ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag + 
+     FlyAsh + FineAggregate + waterFactor:log(Water) + ageFactor:log(Age), 
+     data = data.concrete)
+boot_fun <- function(data, subset, formula) {
+	fit <- lm(formula, data = data[subset,])
+	coef(fit)
+}
+b <- boot(data.concrete, boot_fun, R=999, formula = fit$call$formula)
+b
+for(i in 1:6){
+    plot(b, index=i)
+}
+```
+
+Всё выглядит нормальным.
+
+```{r}
+for(i in 1:6){
+    print(boot.ci(b, type="norm",index=i))
+}
+```

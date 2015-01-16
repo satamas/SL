@@ -36,8 +36,8 @@ xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$perform
 
 ============================================RADIAL==============================================
 ```{r}
-tn.svm.radial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=lis( cost = 2^(-5:15), gamma = (10^(-5:1))/ncol(data.diabetis)), type = "C-classification", kernel = "radial", class.weights = c(neg = 0.33, pos = 0.67))
+tn.svm.radial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list( cost = 2^(-10:20), gamma = (10^(-5:5))/ncol(data.diabetis)), type = "C-classification", kernel = "radial", class.weights = c(neg = 0.33, pos = 0.67))
 tn.svm.radial
 table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.radial$best.model))
-xyplot(tn.svm.radial$performances[, "error"] ~ log(tn.svm.radial$performances[, "cost"]), groups = tn.svm.radial$performances[, "gamma"] , type="b", auto.key=list(title="gamma", corner=c(0.95,1), lines=TRUE))
+plot(tn.svm.radial, transform.x=log2, transform.y=log10)
 ```

@@ -15,31 +15,32 @@ output:
 library("knitr")
 library("e1071")
 library("lattice")
-data.diabetis <- read.table("../data/Diabetis.txt", header=TRUE)
+data.elements <- read.csv("data/data.csv", header=TRUE)
+columns_to_drop <- c("url")
+data.elements <- data.elements[,!(names(data.elements) %in% columns_to_drop)]
 data.elements$has_content <- data.elements$has_content <- factor(data.elements$has_content)
-
 ```
 
 ===========================================LINEAR=============================================
 ```{r}
-tn.svm.linear <- tune(svm, has_content ~ ., data = data.elements, ranges = list(cost = 2^(-5:5)), type = "C-classification", kernel = "linear", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
+tn.svm.linear <- tune(svm, has_content ~ ., data = data.elements, ranges = list(cost = 2^(-5:10)), type = "C-classification", kernel = "linear", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.linear
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.linear$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.linear$best.model))
 xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, "cost"]), type="b")
 ```
 
 ===========================================POLYNOMIAL==========================================
 ```{r}
-tn.svm.polynomial <- tune(svm, has_content ~ ., data = data.elements, ranges=list(cost = 2^(-10:10), degree= (1:5)), type = "C-classification", kernel = "polynomial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
+tn.svm.polynomial <- tune(svm, has_content ~ ., data = data.elements, ranges=list(cost = 2^(0:15), degree= (1:3)), type = "C-classification", kernel = "polynomial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.polynomial
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.polynomial$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.polynomial$best.model))
 xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$performances[, "cost"]), groups = tn.svm.polynomial$performances[, "degree"] , type="b", auto.key=list(title="degree", corner=c(0.95,1), lines=TRUE))
 ```
 
 ============================================RADIAL==============================================
 ```{r}
-tn.svm.radial <- tune(svm, diabetes ~ ., data = data.diabetis, ranges=list( cost = 2^(-10:20), gamma = (10^(-5:5))/ncol(data.diabetis)), type = "C-classification", kernel = "radial", class.weights = c(neg = 0.33, pos = 0.67))
+tn.svm.radial <- tune(svm, has_content ~ ., data = data.elements, ranges=list( cost = 2^(0:15), gamma = (10^(-5:0))/ncol(data.elements)), type = "C-classification", kernel = "radial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
 tn.svm.radial
-table(actual = data.diabetis$diabetes, predicted = predict(tn.svm.radial$best.model))
+table(actual = data.elements$has_content, predicted = predict(tn.svm.radial$best.model))
 plot(tn.svm.radial, transform.x=log2, transform.y=log10)
 ```

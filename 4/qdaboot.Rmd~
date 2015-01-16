@@ -1,0 +1,30 @@
+---
+title: "QDAboot"
+author: "Атамась Семён"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 15
+    fig_width: 15
+    highlight: tango
+    self_contained: no
+    theme: spacelab
+---
+
+```{r}
+library("knitr")
+library("e1071")
+library("lattice")
+library("mvtnorm")
+library(boot)
+```
+
+Вспомогательные функции
+
+```{r}
+iris.data <- subset(iris, select = -Species)
+means <- aggregate(iris.data, list(groups = iris$Species), mean)
+means
+covatiations<-by(iris.data, iris$Species, cov)
+model_list <- list(cov = covatiations, means = means[, -1, drop = FALSE])
+```

@@ -13,11 +13,20 @@ output:
 
 
 ```r
-library("knitr")
-library("e1071")
-library("lattice")
-library("corrplot")
-library("MASS")
+library(lattice)
+library(latticeExtra)
+library(corrplot)
+library(MASS)
+library(e1071)
+library(ROCR)
+```
+
+```
+## Error in library(ROCR): there is no package called 'ROCR'
+```
+
+```r
+library(nnet)
 ```
 
 Готовим данные
@@ -163,7 +172,7 @@ tune(lda, data.seeds.formula , data = data.seeds, prior = c (1/3,1/3,1/3),predic
 
 ```
 ## 
-## Error estimation of 'lda' using 10-fold cross validation: 0.04285714
+## Error estimation of 'lda' using 10-fold cross validation: 0.04761905
 ```
 
 Байес
@@ -223,7 +232,7 @@ tune(naiveBayes, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),
 
 ```
 ## 
-## Error estimation of 'naiveBayes' using 10-fold cross validation: 0.1190476
+## Error estimation of 'naiveBayes' using 10-fold cross validation: 0.1142857
 ```
 плохо
 
@@ -253,7 +262,7 @@ tune(multinom, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),pr
 
 ```
 ## 
-## Error estimation of 'multinom' using 10-fold cross validation: 0.05714286
+## Error estimation of 'multinom' using 10-fold cross validation: 0.04285714
 ```
 лучше.
 
@@ -266,35 +275,35 @@ data.seeds.formula<-as.formula(stepAIC(method.trained))
 ```
 
 ```
-## Start:  AIC=31.42
+## Start:  AIC=40.84
 ## sort ~ area + perimeter + length + width + lengthGroove
 ## 
 ##                Df    AIC
-## - width         2 27.848
-## - area          2 28.507
-## - perimeter     2 28.579
-## <none>            31.423
-## - length        2 45.736
-## - lengthGroove  2 92.981
+## - width         2 38.281
+## - perimeter     2 40.142
+## <none>            40.837
+## - length        2 42.375
+## - area          2 42.648
+## - lengthGroove  2 89.956
 ## 
-## Step:  AIC=27.85
+## Step:  AIC=38.28
 ## sort ~ area + perimeter + length + lengthGroove
 ## 
 ##                Df    AIC
-## - area          2 25.694
-## - perimeter     2 25.835
-## <none>            27.848
-## - length        2 46.207
-## - lengthGroove  2 88.325
+## - perimeter     2 37.439
+## <none>            38.281
+## - area          2 38.827
+## - length        2 42.043
+## - lengthGroove  2 85.755
 ## 
-## Step:  AIC=25.69
-## sort ~ perimeter + length + lengthGroove
+## Step:  AIC=37.44
+## sort ~ area + length + lengthGroove
 ## 
 ##                Df    AIC
-## <none>            25.694
-## - perimeter     2 39.534
-## - length        2 46.387
-## - lengthGroove  2 88.076
+## <none>            37.439
+## - area          2 43.227
+## - length        2 47.229
+## - lengthGroove  2 86.925
 ```
 
 ```r
@@ -310,20 +319,20 @@ lda(data.seeds.formula , data = data.seeds)
 ## 0.3333333 0.3333333 0.3333333 
 ## 
 ## Group means:
-##   perimeter   length lengthGroove
-## 1  14.29429 5.508057     5.087214
-## 2  16.13571 6.148029     6.020600
-## 3  13.24786 5.229514     5.116400
+##       area   length lengthGroove
+## 1 14.33443 5.508057     5.087214
+## 2 18.33429 6.148029     6.020600
+## 3 11.87386 5.229514     5.116400
 ## 
 ## Coefficients of linear discriminants:
-##                    LD1        LD2
-## perimeter     2.898538 -0.9416926
-## length       -6.106849 -6.7552073
-## lengthGroove  3.312739  8.7655896
+##                     LD1        LD2
+## area          0.9061629 -0.3063793
+## length       -3.7426372 -7.5722292
+## lengthGroove  3.4707254  8.7175325
 ## 
 ## Proportion of trace:
 ##    LD1    LD2 
-## 0.7831 0.2169
+## 0.7751 0.2249
 ```
 
 ```r
@@ -332,7 +341,7 @@ tune(lda, data.seeds.formula , data = data.seeds, prior = c (1/3,1/3,1/3),predic
 
 ```
 ## 
-## Error estimation of 'lda' using 10-fold cross validation: 0.03809524
+## Error estimation of 'lda' using 10-fold cross validation: 0.04285714
 ```
 
 ```r
@@ -352,11 +361,11 @@ naiveBayes(data.seeds.formula, data = data.seeds)
 ## 0.3333333 0.3333333 0.3333333 
 ## 
 ## Conditional probabilities:
-##    perimeter
+##    area
 ## Y       [,1]      [,2]
-##   1 14.29429 0.5765831
-##   2 16.13571 0.6169950
-##   3 13.24786 0.3401956
+##   1 14.33443 1.2157036
+##   2 18.33429 1.4394963
+##   3 11.87386 0.7230036
 ## 
 ##    length
 ## Y       [,1]      [,2]
@@ -377,7 +386,7 @@ tune(naiveBayes, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),
 
 ```
 ## 
-## Error estimation of 'naiveBayes' using 10-fold cross validation: 0.0952381
+## Error estimation of 'naiveBayes' using 10-fold cross validation: 0.09047619
 ```
 
 ```r
@@ -389,12 +398,12 @@ multinom(data.seeds.formula, data = data.seeds, trace=FALSE)
 ## multinom(formula = data.seeds.formula, data = data.seeds, trace = FALSE)
 ## 
 ## Coefficients:
-##   (Intercept) perimeter    length lengthGroove
-## 2   -75.35120 11.303599 -59.07156     44.15276
-## 3    46.68444 -4.906493 -16.79397     21.64573
+##   (Intercept)      area   length lengthGroove
+## 2   -17.05763  5.839609 -74.2517     63.07123
+## 3    22.77605 -1.846672 -18.8076     19.96447
 ## 
-## Residual Deviance: 41.41417 
-## AIC: 57.41417
+## Residual Deviance: 39.80399 
+## AIC: 55.80399
 ```
 
 ```r
@@ -403,6 +412,119 @@ tune(multinom, data.seeds.formula, data = data.seeds, prior = c (1/3,1/3,1/3),pr
 
 ```
 ## 
-## Error estimation of 'multinom' using 10-fold cross validation: 0.04761905
+## Error estimation of 'multinom' using 10-fold cross validation: 0.06666667
 ```
 Никаких кардинальных изменений не наблюдается.
+
+Попробуем svm
+
+
+```r
+tn.svm.linear <- tune.svm(sort ~ ., data = data.seeds, kernel = "linear", cost = 2^(-5:15))
+tn.svm.linear
+```
+
+```
+## 
+## Parameter tuning of 'svm':
+## 
+## - sampling method: 10-fold cross validation 
+## 
+## - best parameters:
+##  cost
+##   512
+## 
+## - best performance: 0.04285714
+```
+
+```r
+table(actual = data.seeds$sort, predicted = predict(tn.svm.linear$best.model))
+```
+
+```
+##       predicted
+## actual  1  2  3
+##      1 69  0  1
+##      2  0 70  0
+##      3  1  0 69
+```
+
+```r
+xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, "cost"]), type="b")
+```
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+
+
+```r
+tn.svm.polynomial <- tune.svm(sort ~ ., data = data.seeds, kernel = "polynomial", cost = 2^(-5:15), degree= (1:5))
+tn.svm.polynomial
+```
+
+```
+## 
+## Parameter tuning of 'svm':
+## 
+## - sampling method: 10-fold cross validation 
+## 
+## - best parameters:
+##  degree  cost
+##       1 16384
+## 
+## - best performance: 0.03333333
+```
+
+```r
+table(actual = data.seeds$sort, predicted = predict(tn.svm.polynomial$best.model))
+```
+
+```
+##       predicted
+## actual  1  2  3
+##      1 69  0  1
+##      2  0 70  0
+##      3  1  0 69
+```
+
+```r
+xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$performances[, "cost"]), groups = tn.svm.polynomial$performances[, "degree"] , type="b", auto.key=list(title="degree", corner=c(0.95,1), lines=TRUE))
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
+
+```r
+tn.svm.radial <- tune(svm, sort ~ ., data = data.seeds, ranges=list( cost = 2^(-10:20), gamma = (10^(-5:5))/ncol(data.seeds)), kernel = "radial")
+tn.svm.radial
+```
+
+```
+## 
+## Parameter tuning of 'svm':
+## 
+## - sampling method: 10-fold cross validation 
+## 
+## - best parameters:
+##  cost  gamma
+##  8192 0.0125
+## 
+## - best performance: 0.02857143
+```
+
+```r
+table(actual = data.seeds$sort, predicted = predict(tn.svm.radial$best.model))
+```
+
+```
+##       predicted
+## actual  1  2  3
+##      1 70  0  0
+##      2  0 70  0
+##      3  0  0 70
+```
+
+```r
+plot(tn.svm.radial, transform.x=log2, transform.y=log10)
+```
+
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
