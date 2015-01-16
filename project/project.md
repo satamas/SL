@@ -25,7 +25,7 @@ data.elements$has_content <- data.elements$has_content <- factor(data.elements$h
 ===========================================LINEAR=============================================
 
 ```r
-tn.svm.linear <- tune(svm, has_content ~ ., data = data.elements, ranges = list(cost = 2^(-5:10)), type = "C-classification", kernel = "linear", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
+tn.svm.linear <- tune(svm, has_content ~ ., data = data.elements, ranges = list(cost = 2^(-5:10)), type = "C-classification", kernel = "linear", class.weights = c('1'=(1798-286)/1798,'0'= 286/1798))
 tn.svm.linear
 ```
 
@@ -37,9 +37,9 @@ tn.svm.linear
 ## 
 ## - best parameters:
 ##  cost
-##    16
+##     4
 ## 
-## - best performance: 0.03361286
+## - best performance: 0.03549898
 ```
 
 ```r
@@ -49,8 +49,8 @@ table(actual = data.elements$has_content, predicted = predict(tn.svm.linear$best
 ```
 ##       predicted
 ## actual    0    1
-##      0 1798    0
-##      1   29  257
+##      0 1769   29
+##      1    7  279
 ```
 
 ```r
@@ -62,7 +62,7 @@ xyplot(tn.svm.linear$performances[, "error"] ~ log(tn.svm.linear$performances[, 
 ===========================================POLYNOMIAL==========================================
 
 ```r
-tn.svm.polynomial <- tune(svm, has_content ~ ., data = data.elements, ranges=list(cost = 2^(0:15), degree= (1:3)), type = "C-classification", kernel = "polynomial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
+tn.svm.polynomial <- tune(svm, has_content ~ ., data = data.elements, ranges=list(cost = 2^(0:15), degree= (1:3)), type = "C-classification", kernel = "polynomial", class.weights = c('1'=(1798-286)/1798,'0'= 286/1798))
 tn.svm.polynomial
 ```
 
@@ -73,10 +73,10 @@ tn.svm.polynomial
 ## - sampling method: 10-fold cross validation 
 ## 
 ## - best parameters:
-##  cost degree
-##  8192      1
+##   cost degree
+##  32768      2
 ## 
-## - best performance: 0.03647903
+## - best performance: 0.03553138
 ```
 
 ```r
@@ -86,8 +86,8 @@ table(actual = data.elements$has_content, predicted = predict(tn.svm.polynomial$
 ```
 ##       predicted
 ## actual    0    1
-##      0 1798    0
-##      1   31  255
+##      0 1769   29
+##      1    4  282
 ```
 
 ```r
@@ -99,7 +99,7 @@ xyplot(tn.svm.polynomial$performances[, "error"] ~ log(tn.svm.polynomial$perform
 ============================================RADIAL==============================================
 
 ```r
-tn.svm.radial <- tune(svm, has_content ~ ., data = data.elements, ranges=list( cost = 2^(0:15), gamma = (10^(-5:0))/ncol(data.elements)), type = "C-classification", kernel = "radial", class.weights = c('0'=(1798-286)/1798,'1'= 286/1798))
+tn.svm.radial <- tune(svm, has_content ~ ., data = data.elements, ranges=list( cost = 2^(0:15), gamma = (10^(-5:0))/ncol(data.elements)), type = "C-classification", kernel = "radial", class.weights = c('1'=(1798-286)/1798,'0'= 286/1798))
 tn.svm.radial
 ```
 
@@ -110,10 +110,10 @@ tn.svm.radial
 ## - sampling method: 10-fold cross validation 
 ## 
 ## - best parameters:
-##  cost       gamma
-##   512 0.004545455
+##  cost        gamma
+##  8192 0.0004545455
 ## 
-## - best performance: 0.03119285
+## - best performance: 0.02638734
 ```
 
 ```r
@@ -123,8 +123,8 @@ table(actual = data.elements$has_content, predicted = predict(tn.svm.radial$best
 ```
 ##       predicted
 ## actual    0    1
-##      0 1798    0
-##      1   30  256
+##      0 1773   25
+##      1    1  285
 ```
 
 ```r
